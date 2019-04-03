@@ -7,18 +7,18 @@ const parquet = require('../parquet.js');
 const objectStream = require('object-stream');
 
 const TEST_NUM_ROWS = 10000;
-const TEST_VTIME =  new Date();
+const TEST_VTIME = new Date();
 
 function mkTestSchema(opts) {
   return new parquet.ParquetSchema({
-    name:       { type: 'UTF8', compression: opts.compression },
+    name: { type: 'UTF8', compression: opts.compression },
     //quantity:   { type: 'INT64', encoding: 'RLE', typeLength: 6, optional: true, compression: opts.compression }, // parquet-mr actually doesnt support this
-    quantity:   { type: 'INT64', optional: true, compression: opts.compression },
-    price:      { type: 'DOUBLE', compression: opts.compression },
-    date:       { type: 'TIMESTAMP_MICROS', compression: opts.compression },
-    day:        { type: 'DATE', compression: opts.compression },
-    finger:     { type: 'FIXED_LEN_BYTE_ARRAY', compression: opts.compression, typeLength: 5 },
-    inter:      { type: 'INTERVAL', compression: opts.compression },
+    quantity: { type: 'INT64', optional: true, compression: opts.compression },
+    price: { type: 'DOUBLE', compression: opts.compression },
+    date: { type: 'TIMESTAMP_MICROS', compression: opts.compression },
+    day: { type: 'DATE', compression: opts.compression },
+    finger: { type: 'FIXED_LEN_BYTE_ARRAY', compression: opts.compression, typeLength: 5 },
+    inter: { type: 'INTERVAL', compression: opts.compression },
     stock: {
       repeated: true,
       fields: {
@@ -26,8 +26,8 @@ function mkTestSchema(opts) {
         warehouse: { type: 'UTF8', compression: opts.compression },
       }
     },
-    colour:     { type: 'UTF8', repeated: true, compression: opts.compression },
-    meta_json:  { type: 'BSON', optional: true, compression: opts.compression  },
+    colour: { type: 'UTF8', repeated: true, compression: opts.compression },
+    meta_json: { type: 'BSON', optional: true, compression: opts.compression },
   });
 };
 
@@ -47,7 +47,7 @@ function mkTestRows(opts) {
         { quantity: 10, warehouse: "A" },
         { quantity: 20, warehouse: "B" }
       ],
-      colour: [ 'green', 'red' ]
+      colour: ['green', 'red']
     });
 
     rows.push({
@@ -62,7 +62,7 @@ function mkTestRows(opts) {
         quantity: [50, 33],
         warehouse: "X"
       },
-      colour: [ 'orange' ]
+      colour: ['orange']
     });
 
     rows.push({
@@ -77,7 +77,7 @@ function mkTestRows(opts) {
         { quantity: 42, warehouse: "f" },
         { quantity: 20, warehouse: "x" }
       ],
-      colour: [ 'green', 'brown' ],
+      colour: ['green', 'brown'],
       meta_json: { expected_ship_date: TEST_VTIME }
     });
 
@@ -88,7 +88,7 @@ function mkTestRows(opts) {
       date: new Date(TEST_VTIME + 6000 * i),
       finger: "FNORD",
       inter: { months: 42, days: 23, milliseconds: 777 },
-      colour: [ 'yellow' ],
+      colour: ['yellow'],
       meta_json: { shape: 'curved' }
     });
   }
@@ -215,7 +215,7 @@ async function readTestFile() {
           { quantity: [10], warehouse: "A" },
           { quantity: [20], warehouse: "B" }
         ],
-        colour: [ 'green', 'red' ]
+        colour: ['green', 'red']
       });
 
       assert.deepEqual(await cursor.next(), {
@@ -229,7 +229,7 @@ async function readTestFile() {
         stock: [
           { quantity: [50, 33], warehouse: "X" }
         ],
-        colour: [ 'orange' ]
+        colour: ['orange']
       });
 
       assert.deepEqual(await cursor.next(), {
@@ -243,7 +243,7 @@ async function readTestFile() {
           { quantity: [42], warehouse: "f" },
           { quantity: [20], warehouse: "x" }
         ],
-        colour: [ 'green', 'brown' ],
+        colour: ['green', 'brown'],
         meta_json: { expected_ship_date: TEST_VTIME }
       });
 
@@ -254,7 +254,7 @@ async function readTestFile() {
         date: new Date(TEST_VTIME + 6000 * i),
         finger: Buffer.from("FNORD"),
         inter: { months: 42, days: 23, milliseconds: 777 },
-        colour: [ 'yellow' ],
+        colour: ['yellow'],
         meta_json: { shape: 'curved' }
       });
     }
@@ -289,77 +289,67 @@ async function readTestFile() {
   reader.close();
 }
 
-describe('Parquet', function() {
+describe('Parquet', function () {
   this.timeout(60000);
 
-  describe('with DataPageHeaderV1', function() {
-    it('write a test file', function() {
+  describe('with DataPageHeaderV1', function () {
+    it('write a test file', function () {
       const opts = { useDataPageV2: false, compression: 'UNCOMPRESSED' };
       return writeTestFile(opts);
     });
 
-    it('write a test file and then read it back', function() {
+    it('write a test file and then read it back', function () {
       const opts = { useDataPageV2: false, compression: 'UNCOMPRESSED' };
       return writeTestFile(opts).then(readTestFile);
     });
   });
 
-  describe('with DataPageHeaderV2', function() {
-    it('write a test file', function() {
+  describe('with DataPageHeaderV2', function () {
+    it('write a test file', function () {
       const opts = { useDataPageV2: true, compression: 'UNCOMPRESSED' };
       return writeTestFile(opts);
     });
 
-    it('write a test file and then read it back', function() {
+    it('write a test file and then read it back', function () {
       const opts = { useDataPageV2: true, compression: 'UNCOMPRESSED' };
       return writeTestFile(opts).then(readTestFile);
     });
 
-    it('write a test file with GZIP compression', function() {
+    it('write a test file with GZIP compression', function () {
       const opts = { useDataPageV2: true, compression: 'GZIP' };
       return writeTestFile(opts);
     });
 
-    it('write a test file with GZIP compression and then read it back', function() {
+    it('write a test file with GZIP compression and then read it back', function () {
       const opts = { useDataPageV2: true, compression: 'GZIP' };
       return writeTestFile(opts).then(readTestFile);
     });
 
-    it('write a test file with SNAPPY compression', function() {
+    it('write a test file with SNAPPY compression', function () {
       const opts = { useDataPageV2: true, compression: 'SNAPPY' };
       return writeTestFile(opts);
     });
 
-    it('write a test file with SNAPPY compression and then read it back', function() {
+    it('write a test file with SNAPPY compression and then read it back', function () {
       const opts = { useDataPageV2: true, compression: 'SNAPPY' };
       return writeTestFile(opts).then(readTestFile);
     });
 
-    // it('write a test file with LZO compression', function() {
-    //   const opts = { useDataPageV2: true, compression: 'LZO' };
-    //   return writeTestFile(opts);
-    // });
-
-    // it('write a test file with LZO compression and then read it back', function() {
-    //   const opts = { useDataPageV2: true, compression: 'LZO' };
-    //   return writeTestFile(opts).then(readTestFile);
-    // });
-
-    it('write a test file with BROTLI compression', function() {
+    it('write a test file with BROTLI compression', function () {
       const opts = { useDataPageV2: true, compression: 'BROTLI' };
       return writeTestFile(opts);
     });
 
-    it('write a test file with BROTLI compression and then read it back', function() {
+    it('write a test file with BROTLI compression and then read it back', function () {
       const opts = { useDataPageV2: true, compression: 'BROTLI' };
       return writeTestFile(opts).then(readTestFile);
     });
 
   });
 
-  describe('using the Stream/Transform API', function() {
+  describe('using the Stream/Transform API', function () {
 
-    it('write a test file', async function() {
+    it('write a test file', async function () {
       const opts = { useDataPageV2: true, compression: 'GZIP' };
       let schema = mkTestSchema(opts);
       let transform = new parquet.ParquetTransformer(schema, opts);
